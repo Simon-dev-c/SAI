@@ -17,7 +17,7 @@ float x_vue = 0,y_vue = 10,z_vue = 0;
 
 int centre_z_cube = 55;
 
-int upX = 0 , upY = 10 , upZ = 0;
+int upX = 0 , upY = 1 , upZ = 0;
 
 float lookX = 0,lookY = 0,lookZ = 55;
 
@@ -42,6 +42,27 @@ int liste_touche_enfonce[] = {0,0,0,0,0,0};
 // gauche, droite, avant, arriere, haut, bas
 
 
+// JEU
+
+int niveauVie = 100;
+int niveauEssence = 150;
+
+#define MAX_VIE 100
+#define MAX_ESSENCE 150
+
+
+
+
+void tracerRectangle2D(int x1, int y1, int x2, int y2){
+    glBegin(GL_QUADS);
+    glVertex2f(x1,y1);
+    glVertex2f(x1,y2);
+    glVertex2f(x2,y2);
+    glVertex2f(x2,y1);
+    //glVertex2i(x+1,y+1);
+    glEnd();
+}
+
 void affiche_cube( int x1, int y1, int z1, int x2, int y2, int z2){
     glBegin(GL_QUADS);
     // Rouge
@@ -52,35 +73,35 @@ void affiche_cube( int x1, int y1, int z1, int x2, int y2, int z2){
     glVertex3f(x1, y1, z2);
 
     // Vert
-    glColor3f(0.5, 0.5, 0.5);
+    glColor3f(0.55, 0.55, 0.55);
     glVertex3f(x1, y2, z1);
     glVertex3f(x2, y2, z1);
     glVertex3f(x2, y2, z2);
     glVertex3f(x1, y2, z2);
     
     // Face Dessus
-    glColor3f(0.5, 0.5, 0.5);
+    glColor3f(0.58, 0.58, 0.58);
     glVertex3f(x1, y1, z1);
     glVertex3f(x1, y2, z1);
     glVertex3f(x1, y2, z2);
     glVertex3f(x1, y1, z2);
 
     // Face Dessous
-    glColor3f(0.5, 0.5, 0.5);
+    glColor3f(0.6, 0.6, 0.6);
     glVertex3f(x2, y1, z1);
     glVertex3f(x2, y2, z1);
     glVertex3f(x2, y2, z2);
     glVertex3f(x2, y1, z2);
 
     // Face droit
-    glColor3f(0.5, 0.5, 0.5);
+    glColor3f(0.45, 0.45, 0.45);
     glVertex3f(x1, y1, z1);
     glVertex3f(x2, y1, z1);
     glVertex3f(x2, y2, z1);
     glVertex3f(x1, y2, z1);
 
     // Face gauche
-    glColor3f(0.5, 0.5, 0.5);
+    glColor3f(0.475, 0.475, 0.475);
     glVertex3f(x1, y1, z2);
     glVertex3f(x2, y1, z2);
     glVertex3f(x2, y2, z2);
@@ -197,14 +218,24 @@ void calcul_direction(){
 
 
 void Affichage(){
-    //glClearColor(0.59f, 0.29f, 0.0f, 1.0f); // marron
+    glClearColor(0.2f, 0.3f, 0.7f, 0.8f); // marron
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glFrustum(-5,5,-5,5,10,300);
 
-    gluLookAt(x_vue,y_vue,z_vue,x_vue + lookX,y_vue + lookY,z_vue +lookZ,upX,upY,upZ);
+    float visionActuX,visionActuY,visionActuZ = 0;
+    visionActuX = x_vue + lookX;
+    visionActuY = y_vue + lookY;
+    visionActuZ = z_vue + lookZ;
+
+    gluLookAt(x_vue,y_vue,z_vue, visionActuX, visionActuY, visionActuZ,upX,upY,upZ);
+
+    // pour déplacer les axes dans un endroit visible
+    visionActuX += lookX * 10;
+    visionActuY += lookY * 10;
+    visionActuZ += lookZ * 10;
 
 
     glMatrixMode(GL_MODELVIEW);
@@ -215,24 +246,69 @@ void Affichage(){
 
         // Axe X en rouge
         glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(-100.0f, 0.0f, centre_z_cube);
-        glVertex3f(100.0f, 0.0f, centre_z_cube);
+        glVertex3f(-0.5f + visionActuX, visionActuY, visionActuZ);
+        glVertex3f(0.5f + visionActuX, visionActuY, visionActuZ);
 
         // Axe Y en vert
         glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(0.0f, -100.0f, centre_z_cube);
-        glVertex3f(0.0f, 100.0f, centre_z_cube);
+        glVertex3f(visionActuX, -0.5f + visionActuY, visionActuZ);
+        glVertex3f(visionActuX, 0.5f + visionActuY, visionActuZ);
 
         // Axe Z en bleu
         glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(0.0f, 0.0f, centre_z_cube -100);
-        glVertex3f(0.0f, 0.0f, centre_z_cube +100);
+        glVertex3f(visionActuX, visionActuY, -0.5f + visionActuZ);
+        glVertex3f(visionActuX, visionActuY, 0.5f + visionActuZ);
 
+    glEnd();
+
+    glBegin(GL_QUADS);
+        glColor3f(0.1f, 0.8f, 0.2f);
+        glVertex3f(-1000, -10, 1000);
+        glVertex3f(1000, -10, 1000);
+        glVertex3f(1000, -10, -1000);
+        glVertex3f(-1000, -10, -1000);
     glEnd();
 
     affiche_cube(-5,-5,centre_z_cube-5,5,5,centre_z_cube+5);
 
-    glFlush();
+    // --- Passer en 2D ---
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();           // Sauve la projection 3D
+    glLoadIdentity();
+    gluOrtho2D(0, WindowSizeX, 0, WindowSizeY); // coordonnées pixels
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    int barreVieX = 20;
+    int barreVieY = 20;
+
+    int barreEssenceX = 20;
+    int barreEssenceY = 40;
+
+    glBegin(GL_QUADS);
+
+        glColor3f(1.0,0.0,0.0); // rouge
+        glVertex2f(barreVieX, barreVieY);
+        glVertex2f(2 * niveauVie + barreVieX, barreVieY);
+        glVertex2f(2 * niveauVie + barreVieX, 10 + barreVieY);
+        glVertex2f(barreVieX, 10 + barreVieY);
+
+        glColor3f(1.0,1.0,1.0); // blanc
+        glVertex2f(barreEssenceX, barreEssenceY);
+        glVertex2f(2 * niveauEssence + barreEssenceX, barreEssenceY);
+        glVertex2f(2 * niveauEssence + barreEssenceX, 10 + barreEssenceY);
+        glVertex2f(barreEssenceX, 10 + barreEssenceY);
+    glEnd();
+
+    glPopMatrix();            // Restaure modelview
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();            // Restaure projection 3D
+    glMatrixMode(GL_MODELVIEW);
+
+
+    // affiche tout les éléments :
     glutSwapBuffers();
 }
 
@@ -271,8 +347,8 @@ void Animer()
 
     // normalisation simplifiée
     float length = sqrt(forwardX * forwardX + forwardZ * forwardZ);
-    forwardX /= length;
-    forwardZ /= length;
+    forwardX = forwardX / length;
+    forwardZ = forwardZ / length;
 
     // vecteur droite
     float rightX = -forwardZ;
@@ -298,12 +374,22 @@ void Animer()
         x_vue += rightX * vitesse;
         z_vue += rightZ * vitesse;
     }
-    if (liste_touche_enfonce[4]) y_vue += vitesse;
+    if (liste_touche_enfonce[4]){
+
+        if (niveauEssence > 0){
+            y_vue += vitesse;
+            niveauEssence--;
+         }
+    }
     if (liste_touche_enfonce[5]) y_vue -= vitesse;
 
     calcul_direction();
 
     glutPostRedisplay();
+
+
+
+
 }
 
 
@@ -329,6 +415,7 @@ int main(int argc, char* argv[]){
     glutKeyboardUpFunc(GererClavierRelache); // touche relâchée
 
     glutPassiveMotionFunc(MouvementSourisPassive);
+
 
     glutSetCursor(GLUT_CURSOR_NONE);
 
