@@ -1,6 +1,9 @@
 #define MAX_VIE 100
 #define MAX_ESSENCE 150
 
+int WindowSizeX = 800;
+int WindowSizeY = 800;
+
 int niveauVie = 100;
 int niveauEssence = 150;
 

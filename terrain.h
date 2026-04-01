@@ -6,6 +6,26 @@
 #include "OpenGL/gl.h"
 #include "GLUT/glut.h"
 
+typedef struct{
+    int x;
+    int y;
+    int z;
+}point;
+
+typedef struct {
+    point p1;
+    point p2;
+}mur;
+
+typedef struct {
+
+}boule;
+
+// Pour la qualité des sphères
+int longitude = 20;
+int latitude = 20;
+
+
 void affiche_mur( int x1, int y1, int z1, int x2, int y2, int z2){
     glBegin(GL_QUADS);
     
@@ -47,3 +67,16 @@ void affiche_mur( int x1, int y1, int z1, int x2, int y2, int z2){
 
     glEnd();
 }
+
+void affiche_boule(int rayon, int x, int y, int z){
+    GLUquadric* quad = gluNewQuadric();
+    
+    glPushMatrix();                 // sauvegarde la matrice
+
+    glTranslatef(x, y, z);              // position (x, y, z)
+    gluSphere(quad, rayon, longitude, latitude);       // dessin de la sphère
+
+    glPopMatrix();                  // restaure la matrice
+}
+
+//faire tout les différents affichage

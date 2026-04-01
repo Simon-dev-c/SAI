@@ -1,5 +1,4 @@
 #define GL_SILENCE_DEPRECATION
-#include "param_jeu.h"
 #include "mouvement.h"
 #include "terrain.h"
 
@@ -18,23 +17,21 @@ void Affichage(){
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(-5,5,-5,5,10,300);
+    glFrustum(-5,5,-5,5,10,3000);
 
     float visionActuX,visionActuY,visionActuZ = 0;
     visionActuX = x_vue + lookX;
     visionActuY = y_vue + lookY;
     visionActuZ = z_vue + lookZ;
 
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
     gluLookAt(x_vue,y_vue,z_vue, visionActuX, visionActuY, visionActuZ,upX,upY,upZ);
 
     // pour déplacer les axes dans un endroit visible
     visionActuX += lookX * 10;
     visionActuY += lookY * 10;
     visionActuZ += lookZ * 10;
-
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
 
     // Axes
     glBegin(GL_LINES);
@@ -71,6 +68,8 @@ void Affichage(){
     affiche_mur(-50,0,-25,-80,300,-20);
 
     affiche_mur(0,0,20,5,300,25);
+
+    affiche_boule(30,36,30,52);
 
     // --- Passer en 2D ---
     glMatrixMode(GL_PROJECTION);

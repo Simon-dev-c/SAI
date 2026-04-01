@@ -5,9 +5,7 @@
 #include <string.h>
 #include "OpenGL/gl.h"
 #include "GLUT/glut.h"
-
-int WindowSizeX = 1200;
-int WindowSizeY = 800;
+#include "param_jeu.h"
 
 // derniere position de la souris
 int lastX = -1;
