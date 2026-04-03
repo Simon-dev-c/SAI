@@ -5,6 +5,8 @@
 #include <string.h>
 #include "OpenGL/gl.h"
 #include "GLUT/glut.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 typedef struct{
     int x;
@@ -18,13 +20,75 @@ typedef struct {
 }mur;
 
 typedef struct {
-
+    point p;
+    int rayon;
 }boule;
 
 // Pour la qualité des sphères
 int longitude = 20;
 int latitude = 20;
 
+// Tableau des murs pour gerer les collisions
+#define MAX_MUR 20
+
+mur tableau_mur[MAX_MUR];
+int nb_mur = 0;
+
+// Tableau des boules pour gerer les collisions
+#define MAX_BOULE 20
+
+boule tableau_boule[MAX_BOULE];
+int nb_boule = 0;
+
+void init_tableaux(){
+    point p1,p2;
+    p1.x = 0;
+    p1.y = 0;
+    p1.z = 0;
+    p2.x = 0;
+    p2.y = 0;
+    p2.z = 0;
+    mur m;
+    m.p1 = p1;
+    m.p2 = p2;
+    boule b;
+    b.p = p1;
+    b.rayon = 0;
+    for (int i = 0;i<MAX_MUR;i++){
+        tableau_mur[i] = m;
+    }
+    for (int i = 0;i<MAX_BOULE;i++){
+        tableau_boule[i] = b;
+    }
+}
+
+
+void affiche_sol(int x1, int z1, int x2, int z2){
+    glBegin(GL_QUADS);
+        glColor3f(0.1f, 0.8f, 0.2f); // vert
+        glVertex3f(x1, 0, z2);
+        glVertex3f(x2, 0, z2);
+        glVertex3f(x2, 0, z1);
+        glVertex3f(x1, 0, z1);
+    glEnd();
+}
+
+void creer_mur(int x1, int y1, int z1, int x2, int y2, int z2){
+    if (nb_mur < MAX_MUR){
+        point p1,p2;
+        p1.x = x1;
+        p1.y = y1;
+        p1.z = z1;
+        p2.x = x2;
+        p2.y = y2;
+        p2.z = z2;
+        mur m;
+        m.p1 = p1;
+        m.p2 = p2;
+        tableau_mur[nb_mur] = m;
+        nb_mur++;
+    }
+}
 
 void affiche_mur( int x1, int y1, int z1, int x2, int y2, int z2){
     glBegin(GL_QUADS);
@@ -68,6 +132,20 @@ void affiche_mur( int x1, int y1, int z1, int x2, int y2, int z2){
     glEnd();
 }
 
+void creer_boule(int rayon, int x, int y, int z){
+    if (nb_boule < MAX_BOULE){
+        point p;
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        boule b;
+        b.p = p;
+        b.rayon = rayon;
+        tableau_boule[nb_boule] = b;
+        nb_boule++;
+    }
+}
+
 void affiche_boule(int rayon, int x, int y, int z){
     GLUquadric* quad = gluNewQuadric();
     
@@ -79,4 +157,148 @@ void affiche_boule(int rayon, int x, int y, int z){
     glPopMatrix();                  // restaure la matrice
 }
 
+GLuint textureID;  // variable globale ou membre
+
+// 1️⃣ Chargement au début
+void load_image_texture() {
+    int width, height, channels;
+    unsigned char *data = stbi_load("image.png", &width, &height, &channels, 0);
+    if (!data) {
+        printf("Erreur chargement image\n");
+        return;
+    }
+
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // Choisir le bon format selon le nombre de canaux
+    GLenum format;
+    if (channels == 1)
+        format = GL_RED;
+    else if (channels == 3)
+        format = GL_RGB;
+    else if (channels == 4)
+        format = GL_RGBA;
+    else {
+        printf("Nombre de canaux non supporté : %d\n", channels);
+        stbi_image_free(data);
+        return;
+    }
+
+    // Envoyer la texture au GPU
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
+}
+
+void draw_image(float x, float y, float z, float width, float height) {
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glPushMatrix();
+    glTranslatef(x, y, z);  // position dans l'espace 3D
+
+    glColor3f(1.0f, 1.0f, 1.0f); // couleur neutre
+
+    glBegin(GL_QUADS);
+        glTexCoord2f(1, 1); glVertex3f(0, 0, 0);
+        glTexCoord2f(0, 1); glVertex3f(width, 0, 0);
+        glTexCoord2f(0, 0); glVertex3f(width, height, 0);
+        glTexCoord2f(1, 0); glVertex3f(0, height, 0);
+    glEnd();
+
+    glPopMatrix();
+    glDisable(GL_TEXTURE_2D);   // désactive la texture
+}
+
+
+void creer_objets(){
+
+    creer_mur(0,0, 50,5,300, 55);
+
+    creer_mur(50,0,-50,70,300,-45);
+
+    creer_mur(-50,0,-25,-80,300,-20);
+
+    creer_mur(0,0,20,5,300,25);
+
+    creer_boule(30,36,30,52);
+}
+
+void afficher_objets(){
+    for (int i = 0;i<nb_mur;i++){
+        mur m = tableau_mur[i];
+        affiche_mur(m.p1.x,m.p1.y,m.p1.z,m.p2.x,m.p2.y,m.p2.z);
+    }
+
+    for (int i = 0;i<nb_boule;i++){
+        boule b = tableau_boule[i];
+        affiche_boule(b.rayon,b.p.x,b.p.y,b.p.z);
+    }
+}
+
+
 //faire tout les différents affichage
+
+
+
+// Collision sphère–sphère
+int collision_boule(float cx, float cy, float cz, float rayon_objet) {
+    float dx = x_vue - cx;
+    float dy = y_vue - cy;
+    float dz = z_vue - cz;
+    float dist2 = dx*dx + dy*dy + dz*dz;
+    float somme = rayon_objet + RAYON_JOUEUR;
+    return dist2 < somme * somme;
+}
+
+// Collision sphère–AABB (boîte)
+int collision_mur(float x1, float y1, float z1, float x2, float y2, float z2) {
+    float min_x = x1 < x2 ? x1 : x2;
+    float max_x = x1 > x2 ? x1 : x2;
+    float min_y = y1 < y2 ? y1 : y2;
+    float max_y = y1 > y2 ? y1 : y2;
+    float min_z = z1 < z2 ? z1 : z2;
+    float max_z = z1 > z2 ? z1 : z2;
+
+    float cx = x_vue < min_x ? min_x : (x_vue > max_x ? max_x : x_vue);
+    float cy = y_vue < min_y ? min_y : (y_vue > max_y ? max_y : y_vue);
+    float cz = z_vue < min_z ? min_z : (z_vue > max_z ? max_z : z_vue);
+
+    float dx = x_vue - cx;
+    float dy = y_vue - cy;
+    float dz = z_vue - cz;
+    float dist2 = dx*dx + dy*dy + dz*dz;
+
+    float rayon = RAYON_JOUEUR + 7.0f;  // +10 = near plane de glFrustum
+    return dist2 < rayon * rayon;
+}
+
+int collision(){
+
+    // vérifier que x_vue,y_vue,z_vue ne rentre pas en collision avec un objet
+    // plusieurs façons de considérer le joueur
+
+    for(int i = 0;i<nb_mur;i++){
+        mur b = tableau_mur[i];
+        // gerer collision entre mur b et joueur
+        // si collision mettre collision à 1
+        if (collision_mur(b.p1.x,b.p1.y,b.p1.z,b.p2.x,b.p2.y,b.p2.z)){
+            return 1;
+        }
+    }
+
+    for(int i = 0;i<nb_boule;i++){
+        boule b = tableau_boule[i];
+        //gerer collsision entre boule b et joueur
+        // si collision mettre collision à 1
+        if (collision_boule(b.p.x,b.p.y,b.p.z,b.rayon)){
+            return 1;
+        }
+    }
+
+
+    return 0;
+}

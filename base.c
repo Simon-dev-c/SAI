@@ -2,22 +2,17 @@
 #include "mouvement.h"
 #include "terrain.h"
 
-int collision(){
-
-    // vérifier que x_vue,y_vue,z_vue ne rentre pas en collision avec un objet
-    // plusieurs façons de considérer le joueur
-
-    return 0; // false
-}
-
-
 void Affichage(){
-    glClearColor(0.2f, 0.3f, 0.7f, 0.8f); // marron
+    glClearColor(0.2f, 0.3f, 0.7f, 0.8f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    WindowSizeX = glutGet(GLUT_WINDOW_WIDTH);
+    WindowSizeY = glutGet(GLUT_WINDOW_HEIGHT);
+    GLdouble echelleEcran = (GLdouble)WindowSizeX/WindowSizeY;
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(-5,5,-5,5,10,3000);
+    glFrustum(-5 * echelleEcran,5 * echelleEcran,-5,5,10,3000);
 
     float visionActuX,visionActuY,visionActuZ = 0;
     visionActuX = x_vue + lookX;
@@ -53,23 +48,13 @@ void Affichage(){
 
     glEnd();
 
-    glBegin(GL_QUADS);
-        glColor3f(0.1f, 0.8f, 0.2f);
-        glVertex3f(-1000, 0, 1000);
-        glVertex3f(1000, 0, 1000);
-        glVertex3f(1000, 0, -1000);
-        glVertex3f(-1000, 0, -1000);
-    glEnd();
+    affiche_sol(-10000, -10000, 10000, 10000);
 
-    affiche_mur(0,0, 50,5,300, 55);
+    draw_image(200,100,500,800,800);
 
-    affiche_mur(50,0,-50,70,300,-45);
+    afficher_objets();
 
-    affiche_mur(-50,0,-25,-80,300,-20);
-
-    affiche_mur(0,0,20,5,300,25);
-
-    affiche_boule(30,36,30,52);
+    glDisable(GL_DEPTH_TEST);
 
     // --- Passer en 2D ---
     glMatrixMode(GL_PROJECTION);
@@ -97,13 +82,16 @@ void Affichage(){
 
         glColor3f(1.0,1.0,1.0); // blanc
         glVertex2f(barreEssenceX, barreEssenceY);
-        glVertex2f(2 * niveauEssence + barreEssenceX, barreEssenceY);
-        glVertex2f(2 * niveauEssence + barreEssenceX, 10 + barreEssenceY);
+        glVertex2f(nbPixelBarre * niveauEssence + barreEssenceX, barreEssenceY);
+        glVertex2f(nbPixelBarre * niveauEssence + barreEssenceX, 10 + barreEssenceY);
         glVertex2f(barreEssenceX, 10 + barreEssenceY);
     glEnd();
 
     glPopMatrix();            // Restaure modelview
     glMatrixMode(GL_PROJECTION);
+
+    glEnable(GL_DEPTH_TEST);
+
     glPopMatrix();            // Restaure projection 3D
     glMatrixMode(GL_MODELVIEW);
 
@@ -199,18 +187,7 @@ void Animer()
             z_vue = z_tmp;
         }
     }
-    if (liste_touche_enfonce[4]){
-
-        if (niveauEssence > 0){
-            y_vue += vitesse;
-            niveauEssence--;
-
-            if (collision()){
-                y_vue = y_tmp;
-            }
-        }
-
-    }
+    /* Une touche pour descendre plus vite
     if (liste_touche_enfonce[5]){
         y_vue -= vitesse;
 
@@ -218,6 +195,40 @@ void Animer()
             y_vue = y_tmp;
         }
     }
+    */
+
+    // Gravité appliquée chaque frame
+    vitesse_y -= GRAVITE;
+
+    // Au sol ?
+    int au_sol = (y_vue <= SOL_Y + 0.5f);
+
+    if (au_sol) {
+        if (y_vue < SOL_Y){
+            vitesse_y = 1;
+        }else{
+            vitesse_y = 0;
+        }
+        if (liste_touche_enfonce[4]) {
+            vitesse_y = FORCE_SAUT;       // saut simple, pas de perte d'essence
+        }
+    } else if (liste_touche_enfonce[4] && niveauEssence > 0) {
+        vitesse_y += FORCE_JETPACK;       // jetpack en l'air
+        // Pour tester on met essence illimité
+        niveauEssence--;
+    }
+
+    // Appliquer la vitesse verticale
+    y_tmp = y_vue;
+    y_vue += vitesse_y;
+    if (collision()) {
+        y_vue = y_tmp;
+        vitesse_y = 0;                    // atterrissage ou plafond
+        if (liste_touche_enfonce[4]) {
+            vitesse_y = FORCE_SAUT;       // saut simple, pas de perte d'essence
+        }
+    }
+
 
     calcul_direction();
 
@@ -251,6 +262,9 @@ int main(int argc, char* argv[]){
 
     glutSetCursor(GLUT_CURSOR_NONE);
 
+    init_tableaux();
+    creer_objets();
+    load_image_texture();
     glutMainLoop();
     return 0;
 }
