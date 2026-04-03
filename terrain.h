@@ -213,6 +213,20 @@ void draw_image(float x, float y, float z, float width, float height) {
     glDisable(GL_TEXTURE_2D);   // désactive la texture
 }
 
+void creer_piece(point p1, point p2, int largeur_mur){
+    // un coin
+    creer_mur(p1.x,p1.y, p1.z,p2.x,p2.y, p1.z + largeur_mur);
+    creer_mur(p1.x,p1.y, p1.z,p1.x + largeur_mur,p2.y, p2.z);
+
+    // coin en face
+    creer_mur(p2.x,p1.y, p2.z,p2.x,p2.y, p1.z + largeur_mur);
+    creer_mur(p2.x,p1.y, p2.z,p1.x + largeur_mur,p2.y, p2.z);
+
+    //dessous / dessus
+    creer_mur(p1.x,p1.y, p1.z,p2.x,p1.y + largeur_mur, p2.z);
+    creer_mur(p2.x,p2.y, p2.z,p1.x,p2.y + largeur_mur, p1.z);
+}
+
 
 void creer_objets(){
 
@@ -225,6 +239,13 @@ void creer_objets(){
     creer_mur(0,0,20,5,300,25);
 
     creer_boule(30,36,30,52);
+
+    point p1,p2;
+    p1.x = -1000;p1.y = 0; p1.z = 1000;
+    p2.x = -600;p2.y = 300; p2.z = 600;
+    creer_piece(p1,p2, 20);
+
+
 }
 
 void afficher_objets(){
