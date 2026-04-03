@@ -2,12 +2,52 @@
 #include "mouvement.h"
 #include "terrain.h"
 
-int collision(){
+// Collision sphère–sphère
+int collision_boule(float cx, float cy, float cz, float rayon_objet) {
+    float dx = x_vue - cx;
+    float dy = y_vue - cy;
+    float dz = z_vue - cz;
+    float dist2 = dx*dx + dy*dy + dz*dz;
+    float somme = rayon_objet + RAYON_JOUEUR;
+    return dist2 < somme * somme;
+}
 
-    // vérifier que x_vue,y_vue,z_vue ne rentre pas en collision avec un objet
-    // plusieurs façons de considérer le joueur
+// Collision sphère–AABB (boîte)
+int collision_mur(float x1, float y1, float z1, float x2, float y2, float z2) {
+    float min_x = x1 < x2 ? x1 : x2;
+    float max_x = x1 > x2 ? x1 : x2;
+    float min_y = y1 < y2 ? y1 : y2;
+    float max_y = y1 > y2 ? y1 : y2;
+    float min_z = z1 < z2 ? z1 : z2;
+    float max_z = z1 > z2 ? z1 : z2;
 
-    return 0; // false
+    float cx = x_vue < min_x ? min_x : (x_vue > max_x ? max_x : x_vue);
+    float cy = y_vue < min_y ? min_y : (y_vue > max_y ? max_y : y_vue);
+    float cz = z_vue < min_z ? min_z : (z_vue > max_z ? max_z : z_vue);
+
+    float dx = x_vue - cx;
+    float dy = y_vue - cy;
+    float dz = z_vue - cz;
+    float dist2 = dx*dx + dy*dy + dz*dz;
+
+    float rayon = RAYON_JOUEUR + 7.0f;  // +10 = near plane de glFrustum
+    return dist2 < rayon * rayon;
+}
+
+int collision() {
+    // Sol à y=0
+    if (y_vue < RAYON_JOUEUR + 10.0f) return 1;
+
+    // Boule
+    if (collision_boule(36, 30, 52, 30)) return 1;
+
+    // Murs
+    if (collision_mur(0,   0, 50,  5, 300,  55)) return 1;
+    if (collision_mur(50,  0,-50, 70, 300, -45)) return 1;
+    if (collision_mur(-50, 0,-25,-80, 300, -20)) return 1;
+    if (collision_mur(0,   0, 20,  5, 300,  25)) return 1;
+
+    return 0;
 }
 
 
@@ -17,7 +57,7 @@ void Affichage(){
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(-5,5,-5,5,10,3000);
+    glFrustum(-8,8,-5,5,10,3000);
 
     float visionActuX,visionActuY,visionActuZ = 0;
     visionActuX = x_vue + lookX;
@@ -54,12 +94,12 @@ void Affichage(){
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3f(0.1f, 0.8f, 0.2f);
-        glVertex3f(-1000, 0, 1000);
-        glVertex3f(1000, 0, 1000);
-        glVertex3f(1000, 0, -1000);
-        glVertex3f(-1000, 0, -1000);
-    glEnd();
+    glColor3f(0.1f, 0.8f, 0.2f);
+    glVertex3f(-5000, 0,  5000);
+    glVertex3f( 5000, 0,  5000);
+    glVertex3f( 5000, 0, -5000);
+    glVertex3f(-5000, 0, -5000);
+glEnd();
 
     affiche_mur(0,0, 50,5,300, 55);
 
@@ -137,8 +177,7 @@ void Animer()
 
     glutPostRedisplay();
 }*/
- void Animer()
-{
+void Animer() {
     float vitesse = 0.5f;
 
     // vecteur avant (projection XZ)
@@ -154,7 +193,6 @@ void Animer()
     float rightX = -forwardZ;
     float rightZ = forwardX;
 
-
     float x_tmp = x_vue;
     float y_tmp = y_vue;
     float z_tmp = z_vue;
@@ -163,8 +201,7 @@ void Animer()
     {
         x_vue += forwardX * vitesse;
         z_vue += forwardZ * vitesse;
-
-        if (collision()){
+        if (collision()) {
             x_vue = x_tmp;
             z_vue = z_tmp;
         }
@@ -173,8 +210,7 @@ void Animer()
     {
         x_vue -= forwardX * vitesse;
         z_vue -= forwardZ * vitesse;
-
-        if (collision()){
+        if (collision()) {
             x_vue = x_tmp;
             z_vue = z_tmp;
         }
@@ -183,8 +219,7 @@ void Animer()
     {
         x_vue -= rightX * vitesse;
         z_vue -= rightZ * vitesse;
-
-        if (collision()){
+        if (collision()) {
             x_vue = x_tmp;
             z_vue = z_tmp;
         }
@@ -193,34 +228,37 @@ void Animer()
     {
         x_vue += rightX * vitesse;
         z_vue += rightZ * vitesse;
-
-        if (collision()){
+        if (collision()) {
             x_vue = x_tmp;
             z_vue = z_tmp;
         }
     }
-    if (liste_touche_enfonce[4]){
 
-        if (niveauEssence > 0){
-            y_vue += vitesse;
-            niveauEssence--;
+    // Gravité appliquée chaque frame
+    vitesse_y -= GRAVITE;
 
-            if (collision()){
-                y_vue = y_tmp;
-            }
+    // Au sol ?
+    int au_sol = (y_vue <= SOL_Y + 0.5f);
+
+    if (au_sol) {
+        vitesse_y = 0;
+        if (liste_touche_enfonce[4]) {
+            vitesse_y = FORCE_SAUT;       // saut simple, pas de perte d'essence
         }
-
+    } else if (liste_touche_enfonce[4] && niveauEssence > 0) {
+        vitesse_y += FORCE_JETPACK;       // jetpack en l'air
+        niveauEssence--;
     }
-    if (liste_touche_enfonce[5]){
-        y_vue -= vitesse;
 
-        if (collision()){
-            y_vue = y_tmp;
-        }
+    // Appliquer la vitesse verticale
+    y_tmp = y_vue;
+    y_vue += vitesse_y;
+    if (collision()) {
+        y_vue = y_tmp;
+        vitesse_y = 0;                    // atterrissage ou plafond
     }
 
     calcul_direction();
-
     glutPostRedisplay();
 }
 
