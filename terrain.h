@@ -29,13 +29,13 @@ int longitude = 20;
 int latitude = 20;
 
 // Tableau des murs pour gerer les collisions
-#define MAX_MUR 20
+#define MAX_MUR 200
 
 mur tableau_mur[MAX_MUR];
 int nb_mur = 0;
 
 // Tableau des boules pour gerer les collisions
-#define MAX_BOULE 20
+#define MAX_BOULE 200
 
 boule tableau_boule[MAX_BOULE];
 int nb_boule = 0;
@@ -213,7 +213,7 @@ void draw_image(float x, float y, float z, float width, float height) {
     glDisable(GL_TEXTURE_2D);   // désactive la texture
 }
 
-void creer_piece(point p1, point p2, int largeur_mur){
+void creer_piece_ferme(point p1, point p2, int largeur_mur){
     // un coin
     creer_mur(p1.x,p1.y, p1.z,p2.x,p2.y, p1.z + largeur_mur);
     creer_mur(p1.x,p1.y, p1.z,p1.x + largeur_mur,p2.y, p2.z);
@@ -225,6 +225,158 @@ void creer_piece(point p1, point p2, int largeur_mur){
     //dessous / dessus
     creer_mur(p1.x,p1.y, p1.z,p2.x,p1.y + largeur_mur, p2.z);
     creer_mur(p2.x,p2.y, p2.z,p1.x,p2.y + largeur_mur, p1.z);
+}
+
+void creer_mur_trouer(point p1, point p2, int largeur_mur, int largeur_trou){
+    // Important : il faut que p2 - p1 >= 0 pour tout coordonnées
+    /*
+    ___________________________________________p2
+    |           |                |            |
+    |           |        B1      |            |
+    |           O________________X            | _________p2 - (1/2)*(p2 - p1 - largeur_trou)
+    |           |                |            |
+    |     A1    |       trou     |      A2    |
+    |           |                |            |
+    |           X________________O            |
+    |           |                |            |
+    |           |        B2      |            |
+    |___________|________________|____________|
+    p1          |                |
+                |           (.. + largeur_trou)
+                |
+                |
+    p1 + (1/2)*(p2 - p1 - largeur_trou)
+    */
+
+    // trou = (1/2)*(p2 - p1 - largeur_trou)
+    int x_trou_inf = (p2.x - p1.x - largeur_trou)/2;
+    int y_trou_inf = (p2.y - p1.y - largeur_trou)/2;
+    int z_trou_inf = (p2.z - p1.z - largeur_trou)/2;
+
+    /* Pas besoin de calculer : géométrique donc on utilise l'autre point
+    int x_trou_sup = (1/2)*(p2.x - p1.x + largeur_trou);
+    int y_trou_sup = (1/2)*(p2.y - p1.y + largeur_trou);
+    int z_trou_sup = (1/2)*(p2.z - p1.z + largeur_trou);
+    */
+    //printf("x trou inf : %d \n",x_trou_inf);
+    // sens X
+    if (p1.z == p2.z){
+        // A1
+        creer_mur(p1.x,p1.y,p1.z, p1.x + x_trou_inf, p2.y, p1.z + largeur_mur);
+        // A2
+        creer_mur(p2.x - x_trou_inf ,p1.y,p1.z, p2.x, p2.y, p1.z + largeur_mur);
+
+        // B1
+        creer_mur(p1.x + x_trou_inf , p2.y - y_trou_inf , p1.z, p2.x - x_trou_inf , p2.y, p1.z + largeur_mur);
+        // B2
+        creer_mur(p1.x + x_trou_inf ,p1.y,p1.z, p2.x - x_trou_inf, p1.y + y_trou_inf ,p1.z + largeur_mur);
+    }else{
+        // sens Z
+        if (p1.x == p2.x){
+
+            // A1
+            creer_mur(p1.x,p1.y,p1.z, p1.x + largeur_mur, p2.y, p1.z + z_trou_inf);
+            // A2
+            creer_mur(p1.x ,p1.y,p2.z - z_trou_inf, p1.x + largeur_mur, p2.y, p2.z);
+
+            // B1
+            creer_mur(p1.x , p2.y - y_trou_inf , p1.z + z_trou_inf, p1.x + largeur_mur , p2.y, p2.z - z_trou_inf);
+            // B2
+            creer_mur(p1.x,p1.y,p1.z + z_trou_inf, p1.x + largeur_mur, p1.y + y_trou_inf ,p2.z - z_trou_inf);
+
+        }else{
+            if (p1.y == p2.y){
+                // A1
+                creer_mur(p1.x,p1.y,p1.z, p1.x + x_trou_inf, p1.y + largeur_mur, p2.z );
+                // A2
+                creer_mur(p2.x - x_trou_inf ,p1.y,p1.z, p2.x, p1.y + largeur_mur, p2.z);
+
+                // B1
+                creer_mur(p1.x + x_trou_inf, p1.y , p2.z - z_trou_inf , p2.x - x_trou_inf, p1.y + largeur_mur, p2.z);
+                // B2
+                creer_mur(p1.x + x_trou_inf, p1.y, p1.z, p2.x - x_trou_inf, p1.y + largeur_mur,p1.z + z_trou_inf);
+            }
+        }
+    }
+
+}
+
+void creer_piece_avec_porte(point p1, point p2, int largeur_mur, int largeur_trou, int trou_avant, int trou_gauche, int trou_droite, int trou_arriere, int trou_dessous, int trou_dessus){
+    // pour chaque mur normal, on va avoir 4 murs qui vont representer le même mur qu'avant mais avec un trou au milieu
+    // il faut que pour tout coordonnées : p2 - p1 >= 0
+
+    point p1_mur, p2_mur;
+    // un coin
+    if (trou_avant){
+        p1_mur.x = p1.x;
+        p1_mur.y = p1.y;
+        p1_mur.z = p1.z;
+        p2_mur.x = p2.x;
+        p2_mur.y = p2.y;
+        p2_mur.z = p1.z;
+        creer_mur_trouer(p1_mur, p2_mur, largeur_mur, largeur_trou);
+    }else{
+        creer_mur(p1.x,p1.y, p1.z,p2.x,p2.y, p1.z + largeur_mur);
+    }
+    if (trou_gauche){
+        p1_mur.x = p1.x;
+        p1_mur.y = p1.y;
+        p1_mur.z = p1.z;
+        p2_mur.x = p1.x;
+        p2_mur.y = p2.y;
+        p2_mur.z = p2.z;
+        creer_mur_trouer(p1_mur, p2_mur, largeur_mur, largeur_trou);
+    }else{
+        creer_mur(p1.x,p1.y, p1.z,p1.x + largeur_mur,p2.y, p2.z);
+    }
+
+    // coin en face
+    if (trou_droite){
+        p1_mur.x = p2.x;
+        p1_mur.y = p1.y;
+        p1_mur.z = p1.z;
+        p2_mur.x = p2.x;
+        p2_mur.y = p2.y;
+        p2_mur.z = p2.z;
+        creer_mur_trouer(p1_mur, p2_mur, largeur_mur, largeur_trou);
+    }else{
+        creer_mur(p2.x,p1.y, p2.z,p2.x,p2.y, p1.z + largeur_mur);
+    }
+    if (trou_arriere){
+        p1_mur.x = p1.x;
+        p1_mur.y = p1.y;
+        p1_mur.z = p2.z;
+        p2_mur.x = p2.x;
+        p2_mur.y = p2.y;
+        p2_mur.z = p2.z;
+        creer_mur_trouer(p1_mur, p2_mur, largeur_mur, largeur_trou);
+    }else{
+        creer_mur(p2.x,p1.y, p2.z,p1.x + largeur_mur,p2.y, p2.z);
+    }
+
+    //dessous / dessus
+    if (trou_dessous){
+        p1_mur.x = p1.x;
+        p1_mur.y = p1.y;
+        p1_mur.z = p1.z;
+        p2_mur.x = p2.x;
+        p2_mur.y = p1.y;
+        p2_mur.z = p2.z;
+        creer_mur_trouer(p1_mur, p2_mur, largeur_mur, largeur_trou);
+    }else{
+        creer_mur(p1.x,p1.y, p1.z,p2.x,p1.y + largeur_mur, p2.z);
+    }
+    if (trou_dessus){
+        p1_mur.x = p1.x;
+        p1_mur.y = p2.y;
+        p1_mur.z = p1.z;
+        p2_mur.x = p2.x;
+        p2_mur.y = p2.y;
+        p2_mur.z = p2.z;
+        creer_mur_trouer(p1_mur, p2_mur, largeur_mur, largeur_trou);
+    }else{
+        creer_mur(p2.x,p2.y, p2.z,p1.x,p2.y + largeur_mur, p1.z);
+    }
 }
 
 
@@ -240,12 +392,36 @@ void creer_objets(){
 
     creer_boule(30,36,30,52);
 
+    
     point p1,p2;
+    p1.x = -1000;p1.y = 0; p1.z = 1400;
+    p2.x = -600;p2.y = 300; p2.z = 1800;
+    creer_piece_ferme(p1,p2, 20);
+    
     p1.x = -1000;p1.y = 0; p1.z = 1000;
-    p2.x = -600;p2.y = 300; p2.z = 600;
-    creer_piece(p1,p2, 20);
+    p2.x = -400;p2.y = 300; p2.z = 1000;
+    creer_mur_trouer(p1,p2,20,200);
 
+    p1.x = -1000;p1.y = 0; p1.z = 400;
+    p2.x = -1000;p2.y = 300; p2.z = 1000;
+    creer_mur_trouer(p1,p2,20,50);
 
+    p1.x = -1000;p1.y = 0; p1.z = 400;
+    p2.x = -400;p2.y = 0; p2.z = 1000;
+    creer_mur_trouer(p1,p2,20,150);
+
+    p1.x = -1000;p1.y = 300; p1.z = 400;
+    p2.x = -400;p2.y = 300; p2.z = 1000;
+    creer_mur_trouer(p1,p2,20,40);
+
+    p1.x = 0;p1.y = 0; p1.z = 1000;
+    p2.x = 400;p2.y = 300; p2.z = 1400;
+    creer_piece_avec_porte(p1, p2, 20, 50, 1,1,1,0,0,1);
+
+    p1.x = 130;p1.y = 80; p1.z = 600;
+    p2.x = 250;p2.y = 200; p2.z = 1000;
+    creer_piece_avec_porte(p1, p2, 20, 50, 1,0,0,1,0,0);
+    
 }
 
 void afficher_objets(){

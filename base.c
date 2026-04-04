@@ -50,7 +50,7 @@ void Affichage(){
 
     affiche_sol(-10000, -10000, 10000, 10000);
 
-    draw_image(200,100,500,800,800);
+    draw_image(400,100,500,800,800);
 
     afficher_objets();
 
@@ -127,7 +127,6 @@ void Animer()
 }*/
  void Animer()
 {
-    float vitesse = 0.5f;
 
     // vecteur avant (projection XZ)
     float forwardX = lookX;
@@ -204,6 +203,9 @@ void Animer()
     int au_sol = (y_vue <= SOL_Y + 0.5f);
 
     if (au_sol) {
+        if (niveauEssence < MAX_ESSENCE){
+            niveauEssence ++;
+        }
         if (y_vue < SOL_Y){
             vitesse_y = 1;
         }else{
@@ -222,6 +224,9 @@ void Animer()
     y_tmp = y_vue;
     y_vue += vitesse_y;
     if (collision()) {
+        if (niveauEssence < MAX_ESSENCE){
+            niveauEssence ++;
+        }
         y_vue = y_tmp;
         vitesse_y = 0;                    // atterrissage ou plafond
         if (liste_touche_enfonce[4]) {

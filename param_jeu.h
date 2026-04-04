@@ -23,6 +23,8 @@ float x_vue = 0,y_vue = 30,z_vue = 0;
 
 float vitesse_y = 0.0f;
 
+float vitesse = 1.6f;
+
 
 GLdouble vision_proche = 10;
 GLdouble vision_loin = 5000;

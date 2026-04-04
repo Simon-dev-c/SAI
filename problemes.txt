@@ -1,0 +1,3 @@
+Touches qui ne sont pas détectés comme relachés, quand la souris sort de l'écran par exemple.
+
+Souris qui réapparait
