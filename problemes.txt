@@ -1,3 +1,5 @@
 Touches qui ne sont pas détectés comme relachés, quand la souris sort de l'écran par exemple.
 
 Souris qui réapparait
+
+passes à traveers les murs quand vitesse trop grande et ducoup peut rester bloquer sous le mur

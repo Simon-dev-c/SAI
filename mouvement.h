@@ -21,13 +21,13 @@ On utilise généralement :
 yaw → rotation gauche/droite
 pitch → rotation haut/bas
 */
-float yaw = 0.0f;
+float yaw = 90.0f;
 float pitch = 0.0f;
 float sensibilite = 0.1f;
 
 
 // Direction où l'on regarde
-float lookX = 0,lookY = 0,lookZ = 55;
+float lookX = 0,lookY = 0,lookZ = 0;
 
 void GererClavier(unsigned char touche, int x, int y)
 {

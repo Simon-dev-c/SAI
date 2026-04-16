@@ -12,7 +12,7 @@ void Affichage(){
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(-5 * echelleEcran,5 * echelleEcran,-5,5,10,3000);
+    glFrustum(-5 * echelleEcran,5 * echelleEcran,-5,5,10,10000);
 
     float visionActuX,visionActuY,visionActuZ = 0;
     visionActuX = x_vue + lookX;
@@ -269,7 +269,6 @@ int main(int argc, char* argv[]){
 
     init_tableaux();
     creer_objets();
-    load_image_texture();
     glutMainLoop();
     return 0;
 }
