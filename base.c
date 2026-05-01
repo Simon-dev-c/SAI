@@ -50,7 +50,7 @@ void Affichage(){
 
     affiche_sol(-10000, -10000, 10000, 10000);
 
-    draw_image(400,100,500,800,800);
+    draw_image(img1);
 
     afficher_objets();
 
@@ -271,6 +271,7 @@ int main(int argc, char* argv[]){
     glutSetCursor(GLUT_CURSOR_NONE);
 
     init_tableaux();
+    init_images();
     creer_objets();
     glutMainLoop();
     return 0;

@@ -25,6 +25,20 @@ typedef struct {
     int rayon;
 }boule;
 
+typedef struct {
+    char* nom_fichier;
+    int width;
+    int height;
+    int channels;
+    unsigned char *data;
+    int x;
+    int y;
+    int z;
+}image;
+
+image img1;
+
+
 // Pour la qualité des sphères
 int longitude = 20;
 int latitude = 20;
@@ -69,6 +83,15 @@ void init_tableaux(){
     }
 }
 
+void init_images(){
+    img1.nom_fichier = "images/image.png";
+    img1.x = 400;
+    img1.y = 100;
+    img1.z = 500;
+    img1.width = 800;
+    img1.height = 800;
+
+}
 
 void affiche_sol(int x1, int z1, int x2, int z2){
     glBegin(GL_QUADS);
@@ -167,9 +190,8 @@ void affiche_boule(int rayon, int x, int y, int z){
 GLuint textureID;  // variable globale ou membre
 
 // 1️⃣ Chargement au début
-void load_image_texture() {
-    int width, height, channels;
-    unsigned char *data = stbi_load("image.png", &width, &height, &channels, 0);
+void load_image_texture( image img ) {
+    unsigned char *data = stbi_load(img.nom_fichier, &img.width, &img.height, &img.channels, 0);
     if (!data) {
         printf("Erreur chargement image\n");
         return;
@@ -180,40 +202,40 @@ void load_image_texture() {
 
     // Choisir le bon format selon le nombre de canaux
     GLenum format;
-    if (channels == 1)
+    if (img.channels == 1)
         format = GL_RED;
-    else if (channels == 3)
+    else if (img.channels == 3)
         format = GL_RGB;
-    else if (channels == 4)
+    else if (img.channels == 4)
         format = GL_RGBA;
     else {
-        printf("Nombre de canaux non supporté : %d\n", channels);
+        printf("Nombre de canaux non supporté : %d\n", img.channels);
         stbi_image_free(data);
         return;
     }
 
     // Envoyer la texture au GPU
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, img.width, img.height, 0, format, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_image_free(data);
 }
 
-void draw_image(float x, float y, float z, float width, float height) {
+void draw_image(image img) {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     glPushMatrix();
-    glTranslatef(x, y, z);  // position dans l'espace 3D
+    glTranslatef(img.x, img.y, img.z);  // position dans l'espace 3D
 
     glColor3f(1.0f, 1.0f, 1.0f); // couleur neutre
 
     glBegin(GL_QUADS);
         glTexCoord2f(1, 1); glVertex3f(0, 0, 0);
-        glTexCoord2f(0, 1); glVertex3f(width, 0, 0);
-        glTexCoord2f(0, 0); glVertex3f(width, height, 0);
-        glTexCoord2f(1, 0); glVertex3f(0, height, 0);
+        glTexCoord2f(0, 1); glVertex3f(img.width, 0, 0);
+        glTexCoord2f(0, 0); glVertex3f(img.width, img.height, 0);
+        glTexCoord2f(1, 0); glVertex3f(0, img.height, 0);
     glEnd();
 
     glPopMatrix();
@@ -565,7 +587,7 @@ void creer_objet_rammassable(int rayon, point p1, point p2){
 
 
 void creer_objets(){
-    load_image_texture();
+    load_image_texture(img1);
     /*
     creer_mur(0,0, 50,5,300, 55);
 
