@@ -560,12 +560,19 @@ void creer_objet_rammassable(int rayon, point p1, point p2){
     // Emplacement aléatoire à l'intérieur
     int minX = (p1.x < p2.x) ? p1.x : p2.x;
     int maxX = (p1.x > p2.x) ? p1.x : p2.x;
+    minX += rayon;
+    maxX -= rayon;
 
     int minY = (p1.y < p2.y) ? p1.y : p2.y;
     int maxY = (p1.y > p2.y) ? p1.y : p2.y;
+    minY += rayon;
+    maxY -= rayon;
 
     int minZ = (p1.z < p2.z) ? p1.z : p2.z;
     int maxZ = (p1.z > p2.z) ? p1.z : p2.z;
+    minY += rayon;
+    maxY -= rayon;
+
 
     int x = minX + rand() % (maxX - minX + 1);
     int y = minY + rand() % (maxY - minY + 1);
