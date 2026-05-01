@@ -28,3 +28,10 @@ float vitesse = 1.6f;
 
 GLdouble vision_proche = 10;
 GLdouble vision_loin = 5000;
+
+// Pour le texte
+char buffer[64];
+
+// Pour le compteur
+int collected = 0;
+int total = 30;

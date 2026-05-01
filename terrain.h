@@ -8,6 +8,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+
 typedef struct{
     int x;
     int y;
@@ -40,6 +41,9 @@ int nb_mur = 0;
 boule tableau_boule[MAX_BOULE];
 int nb_boule = 0;
 
+boule tableau_objet_rammassable[MAX_BOULE];
+int nb_objet_rammassable = 0;
+
 void init_tableaux(){
     point p1,p2;
     p1.x = 0;
@@ -59,6 +63,9 @@ void init_tableaux(){
     }
     for (int i = 0;i<MAX_BOULE;i++){
         tableau_boule[i] = b;
+    }
+    for (int i = 0;i<MAX_BOULE;i++){
+        tableau_objet_rammassable[i] = b;
     }
 }
 
@@ -211,6 +218,14 @@ void draw_image(float x, float y, float z, float width, float height) {
 
     glPopMatrix();
     glDisable(GL_TEXTURE_2D);   // désactive la texture
+}
+
+void drawText(float x, float y, const char* text) {
+    glRasterPos2f(x, y);
+
+    for (const char* c = text; *c != '\0'; c++) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+    }
 }
 
 void creer_piece_ferme(point p1, point p2, int largeur_mur){
@@ -519,6 +534,35 @@ void creer_piece_avec_porte(point p1, point p2, int largeur_mur, int largeur_tro
     }
 }
 
+void creer_objet_rammassable(int rayon, point p1, point p2){
+    // Emplacement aléatoire à l'intérieur
+    int minX = (p1.x < p2.x) ? p1.x : p2.x;
+    int maxX = (p1.x > p2.x) ? p1.x : p2.x;
+
+    int minY = (p1.y < p2.y) ? p1.y : p2.y;
+    int maxY = (p1.y > p2.y) ? p1.y : p2.y;
+
+    int minZ = (p1.z < p2.z) ? p1.z : p2.z;
+    int maxZ = (p1.z > p2.z) ? p1.z : p2.z;
+
+    int x = minX + rand() % (maxX - minX + 1);
+    int y = minY + rand() % (maxY - minY + 1);
+    int z = minZ + rand() % (maxZ - minZ + 1);
+
+    if (nb_objet_rammassable < MAX_BOULE){
+        point p;
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        boule b;
+        b.p = p;
+        b.rayon = rayon;
+        tableau_objet_rammassable[nb_objet_rammassable] = b;
+        nb_objet_rammassable++;
+    }
+
+}
+
 
 void creer_objets(){
     load_image_texture();
@@ -569,6 +613,10 @@ void creer_objets(){
     p1.x = -800;p1.y = 0; p1.z = 1500;
     p2.x = 800;p2.y = 1500; p2.z = 3500;
     creer_piece_avec_porte(p1, p2, 1, 100, 150, 2,2,2,2,0,1);
+
+    for (int i=0;i<total;i++){
+        creer_objet_rammassable(20,p1,p2);
+    }
     
     p1.x = -1500;p1.y = 0; p1.z = 2000;
     p2.x = -800;p2.y = 1000; p2.z = 3000;
@@ -576,6 +624,7 @@ void creer_objets(){
     p1.x = 800;p1.y = 0; p1.z = 2000;
     p2.x = 1500;p2.y = 1000; p2.z = 3000;
     creer_piece_avec_porte(p1, p2, 1, 100, 150, 0,2,0,0,0,0);
+
 }
 
 void afficher_objets(){
@@ -586,6 +635,13 @@ void afficher_objets(){
 
     for (int i = 0;i<nb_boule;i++){
         boule b = tableau_boule[i];
+        affiche_boule(b.rayon,b.p.x,b.p.y,b.p.z);
+    }
+
+    // couleur jaune
+    glColor3f(1.0f, 1.0f, 0.0f);
+    for (int i = 0;i<nb_objet_rammassable;i++){
+        boule b = tableau_objet_rammassable[i];
         affiche_boule(b.rayon,b.p.x,b.p.y,b.p.z);
     }
 
@@ -632,6 +688,20 @@ int collision(){
 
     // vérifier que x_vue,y_vue,z_vue ne rentre pas en collision avec un objet
     // plusieurs façons de considérer le joueur
+
+    for(int i = 0;i<nb_objet_rammassable;i++){
+        boule b = tableau_objet_rammassable[i];
+        //gerer collsision entre boule b et joueur
+        // si collision mettre collision à 1
+        if (collision_boule(b.p.x,b.p.y,b.p.z,b.rayon)){
+            tableau_objet_rammassable[i].p.x = 0;
+            tableau_objet_rammassable[i].p.y = -200;
+            tableau_objet_rammassable[i].p.z = 0;
+            tableau_objet_rammassable[i].rayon = 0;
+            collected++;
+            return 1;
+        }
+    }
 
     for(int i = 0;i<nb_mur;i++){
         mur b = tableau_mur[i];

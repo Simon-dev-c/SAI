@@ -87,6 +87,9 @@ void Affichage(){
         glVertex2f(barreEssenceX, 10 + barreEssenceY);
     glEnd();
 
+    sprintf(buffer, "objets ramasses : %d/%d", collected, total);
+    drawText(WindowSizeX*0.85, WindowSizeY - 20, buffer);
+
     glPopMatrix();            // Restaure modelview
     glMatrixMode(GL_PROJECTION);
 
