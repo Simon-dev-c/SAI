@@ -14,7 +14,7 @@ GLfloat nbPixelBarre = 1;
 int upX = 0 , upY = 1 , upZ = 0;
 
 // où l'on est (changer les variables pour changer où l'on apparait)
-float x_vue = 0,y_vue = 20,z_vue = 1400;
+float x_vue = 0,y_vue = 20,z_vue = 1600;
 
 #define SOL_Y (RAYON_JOUEUR + 10.0f)
 #define GRAVITE       0.3f
@@ -35,4 +35,4 @@ char buffer[64];
 
 // Pour le compteur
 int collected = 0;
-int total = 200; // ne doit pas être supérieur à MAX_BOULE
+int total = 0; // ne doit pas être supérieur à MAX_BOULE

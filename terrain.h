@@ -58,6 +58,10 @@ int nb_boule = 0;
 boule tableau_objet_rammassable[MAX_BOULE];
 int nb_objet_rammassable = 0;
 
+
+mur porte_sortie;
+
+
 void init_tableaux(){
     point p1,p2;
     p1.x = 0;
@@ -154,6 +158,42 @@ void affiche_mur( int x1, int y1, int z1, int x2, int y2, int z2){
     glVertex3f(x1, y2, z1);
 
     glColor3f(0.475, 0.475, 0.475);
+    glVertex3f(x1, y1, z2);
+    glVertex3f(x2, y1, z2);
+    glVertex3f(x2, y2, z2);
+    glVertex3f(x1, y2, z2);
+
+    glEnd();
+}
+
+void affiche_porte( int x1, int y1, int z1, int x2, int y2, int z2){
+    glBegin(GL_QUADS);
+    
+    glVertex3f(x1, y1, z1);
+    glVertex3f(x2, y1, z1);
+    glVertex3f(x2, y1, z2);
+    glVertex3f(x1, y1, z2);
+
+    glVertex3f(x1, y2, z1);
+    glVertex3f(x2, y2, z1);
+    glVertex3f(x2, y2, z2);
+    glVertex3f(x1, y2, z2);
+    
+    glVertex3f(x1, y1, z1);
+    glVertex3f(x1, y2, z1);
+    glVertex3f(x1, y2, z2);
+    glVertex3f(x1, y1, z2);
+
+    glVertex3f(x2, y1, z1);
+    glVertex3f(x2, y2, z1);
+    glVertex3f(x2, y2, z2);
+    glVertex3f(x2, y1, z2);
+
+    glVertex3f(x1, y1, z1);
+    glVertex3f(x2, y1, z1);
+    glVertex3f(x2, y2, z1);
+    glVertex3f(x1, y2, z1);
+
     glVertex3f(x1, y1, z2);
     glVertex3f(x2, y1, z2);
     glVertex3f(x2, y2, z2);
@@ -604,6 +644,20 @@ void creer_objet_rammassable(int rayon, point p1, point p2){
 
 }
 
+void creer_porte(point p1, point p2){
+    porte_sortie.p1 = p1;
+    porte_sortie.p2 = p2;
+}
+
+void supprimer_porte(){
+    porte_sortie.p1.x = 0;
+    porte_sortie.p1.y = -100;
+    porte_sortie.p1.z = 0;
+    porte_sortie.p2.x = 0;
+    porte_sortie.p2.y = -100;
+    porte_sortie.p2.z = 0;
+}
+
 
 void creer_objets(){
     load_image_texture(img1);
@@ -650,12 +704,18 @@ void creer_objets(){
     p2.x = 250;p2.y = 200; p2.z = 1000;
     creer_piece_avec_porte(p1, p2, 1, 30, 45, 1,0,0,1,0,0);
     */
+    p1.x = -50;p1.y = 0; p1.z = 1500;
+    p2.x = 50;p2.y = 150; p2.z = 1500;
+    creer_porte(p1,p2);
+    
 
     p1.x = -800;p1.y = 0; p1.z = 1500;
     p2.x = 800;p2.y = 1500; p2.z = 3500;
     creer_piece_avec_porte(p1, p2, 1, 100, 150, 2,2,2,2,0,1);
 
-    for (int i=0;i<total;i++){
+    //ajout_total
+    for (int i=0;i<200;i++){
+        total ++;
         creer_objet_rammassable(20,p1,p2);
     }
     
@@ -685,6 +745,10 @@ void afficher_objets(){
         boule b = tableau_objet_rammassable[i];
         affiche_boule(b.rayon,b.p.x,b.p.y,b.p.z);
     }
+
+    // couleur
+    glColor3f(1.0f, 0.0f, 0.0f);
+    affiche_porte(porte_sortie.p1.x,porte_sortie.p1.y,porte_sortie.p1.z,porte_sortie.p2.x,porte_sortie.p2.y,porte_sortie.p2.z);
 
 }
 
@@ -741,6 +805,9 @@ int collision(){
             tableau_objet_rammassable[i].p.z = 0;
             tableau_objet_rammassable[i].rayon = 0;
             collected++;
+            if (total == collected){
+                supprimer_porte();
+            }
             return 1;
         }
     }
@@ -761,6 +828,10 @@ int collision(){
         if (collision_boule(b.p.x,b.p.y,b.p.z,b.rayon)){
             return 1;
         }
+    }
+
+    if (collision_mur(porte_sortie.p1.x,porte_sortie.p1.y,porte_sortie.p1.z,porte_sortie.p2.x,porte_sortie.p2.y,porte_sortie.p2.z)){
+        return 1;
     }
 
 
