@@ -718,6 +718,39 @@ void creer_objets(){
         total ++;
         creer_objet_rammassable(20,p1,p2);
     }
+
+    // couloir plafond
+    p1.x = -50;p1.y = 1500; p1.z = 2450;
+    p2.x = 50;p2.y = 2500; p2.z = 2550;
+    creer_piece_avec_porte(p1, p2, 1, 100, 0, 0,0,0,0,1,1);
+
+    // salle du dessus
+    p1.x = -800;p1.y = 2500; p1.z = 1500;
+    p2.x = 800;p2.y = 4500; p2.z = 3500;
+    creer_piece_avec_porte(p1, p2, 1, 100, 150, 0,0,0,0,1,0);
+
+    //ajout_total
+    for (int i=0;i<200;i++){
+        total ++;
+        creer_objet_rammassable(20,p1,p2);
+    }
+
+    // couloir arriere
+    p1.x = -50;p1.y = 0; p1.z = 3500;
+    p2.x = 50;p2.y = 150; p2.z = 4000;
+    creer_piece_avec_porte(p1, p2, 1, 100, 150, 2,0,0,2,0,0);
+
+    // salle de l'arrière
+    p1.x = -800;p1.y = 0; p1.z = 4000;
+    p2.x = 800;p2.y = 1500; p2.z = 6000;
+    creer_piece_avec_porte(p1, p2, 1, 100, 150, 2,0,0,0,0,0);
+
+    //ajout_total
+    for (int i=0;i<200;i++){
+        total ++;
+        creer_objet_rammassable(20,p1,p2);
+    }
+
     
     p1.x = -1500;p1.y = 0; p1.z = 2000;
     p2.x = -800;p2.y = 1000; p2.z = 3000;

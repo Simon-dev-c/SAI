@@ -237,7 +237,7 @@ void Animer()
     if (vitesse_y < -VITESSE_Y_MAX){
         vitesse_y = -VITESSE_Y_MAX;
     }
-    printf("Vitesse Y : %f \n", vitesse_y);
+    //printf("Vitesse Y : %f \n", vitesse_y);
 
     // Appliquer la vitesse verticale
     y_tmp = y_vue;
