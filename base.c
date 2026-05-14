@@ -133,11 +133,13 @@ void Animer()
 
     // vecteur avant (projection XZ)
     float forwardX = lookX;
+    float forwardY = lookY;
     float forwardZ = lookZ;
 
     // normalisation simplifiée
     float length = sqrt(forwardX * forwardX + forwardZ * forwardZ);
     forwardX = forwardX / length;
+    forwardY = forwardY / length;
     forwardZ = forwardZ / length;
 
     // vecteur droite
@@ -151,6 +153,7 @@ void Animer()
 
     if (liste_touche_enfonce[2]) // Z
     {
+        
         x_vue += forwardX * vitesse;
         z_vue += forwardZ * vitesse;
 
@@ -158,6 +161,7 @@ void Animer()
             x_vue = x_tmp;
             z_vue = z_tmp;
         }
+        
     }
     if (liste_touche_enfonce[3]) // S
     {
@@ -217,11 +221,23 @@ void Animer()
         if (liste_touche_enfonce[4]) {
             vitesse_y = FORCE_SAUT;       // saut simple, pas de perte d'essence
         }
-    } else if (liste_touche_enfonce[4] && niveauEssence > 0) {
-        vitesse_y += FORCE_JETPACK;       // jetpack en l'air
+    } else if ((liste_touche_enfonce[4] && niveauEssence > 0) || (liste_touche_enfonce[2] && niveauEssence > 0)) {
+        if (liste_touche_enfonce[4]){
+            vitesse_y += FORCE_JETPACK;       // jetpack en l'air
+        }else{
+            vitesse_y = forwardY * vitesse;       // pas de gravité car on utilise le jetpack pour aller tout droit (deplacement en 3 dim)
+        }
         // Pour tester on met essence illimité
         niveauEssence--;
     }
+
+    if (vitesse_y > VITESSE_Y_MAX){
+        vitesse_y = VITESSE_Y_MAX;
+    }
+    if (vitesse_y < -VITESSE_Y_MAX){
+        vitesse_y = -VITESSE_Y_MAX;
+    }
+    printf("Vitesse Y : %f \n", vitesse_y);
 
     // Appliquer la vitesse verticale
     y_tmp = y_vue;

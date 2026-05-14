@@ -44,13 +44,13 @@ int longitude = 20;
 int latitude = 20;
 
 // Tableau des murs pour gerer les collisions
-#define MAX_MUR 200
+#define MAX_MUR 2000
 
 mur tableau_mur[MAX_MUR];
 int nb_mur = 0;
 
 // Tableau des boules pour gerer les collisions
-#define MAX_BOULE 200
+#define MAX_BOULE 2000
 
 boule tableau_boule[MAX_BOULE];
 int nb_boule = 0;
@@ -560,18 +560,30 @@ void creer_objet_rammassable(int rayon, point p1, point p2){
     // Emplacement aléatoire à l'intérieur
     int minX = (p1.x < p2.x) ? p1.x : p2.x;
     int maxX = (p1.x > p2.x) ? p1.x : p2.x;
-    minX += rayon;
-    maxX -= rayon;
+    minX += rayon * 2;
+    maxX -= rayon * 2;
+    if (minX > maxX){
+        total --;
+        return;
+    }
 
     int minY = (p1.y < p2.y) ? p1.y : p2.y;
     int maxY = (p1.y > p2.y) ? p1.y : p2.y;
     minY += rayon;
     maxY -= rayon;
+    if (minY > maxY){
+        total --;
+        return;
+    }
 
     int minZ = (p1.z < p2.z) ? p1.z : p2.z;
     int maxZ = (p1.z > p2.z) ? p1.z : p2.z;
-    minY += rayon;
-    maxY -= rayon;
+    minZ += rayon;
+    maxZ -= rayon;
+    if (minZ > maxZ){
+        total --;
+        return;
+    }
 
 
     int x = minX + rand() % (maxX - minX + 1);
@@ -723,6 +735,7 @@ int collision(){
         //gerer collsision entre boule b et joueur
         // si collision mettre collision à 1
         if (collision_boule(b.p.x,b.p.y,b.p.z,b.rayon)){
+            niveauEssence = MAX_ESSENCE;
             tableau_objet_rammassable[i].p.x = 0;
             tableau_objet_rammassable[i].p.y = -200;
             tableau_objet_rammassable[i].p.z = 0;

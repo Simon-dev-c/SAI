@@ -14,7 +14,7 @@ GLfloat nbPixelBarre = 1;
 int upX = 0 , upY = 1 , upZ = 0;
 
 // où l'on est (changer les variables pour changer où l'on apparait)
-float x_vue = 0,y_vue = 30,z_vue = 0;
+float x_vue = 0,y_vue = 20,z_vue = 1400;
 
 #define SOL_Y (RAYON_JOUEUR + 10.0f)
 #define GRAVITE       0.3f
@@ -22,6 +22,7 @@ float x_vue = 0,y_vue = 30,z_vue = 0;
 #define FORCE_JETPACK 0.4f
 
 float vitesse_y = 0.0f;
+#define VITESSE_Y_MAX 10 // vitesse maximal à la verticale
 
 float vitesse = 1.6f;
 
@@ -34,4 +35,4 @@ char buffer[64];
 
 // Pour le compteur
 int collected = 0;
-int total = 30;
+int total = 200; // ne doit pas être supérieur à MAX_BOULE
