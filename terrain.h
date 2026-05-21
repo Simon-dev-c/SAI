@@ -44,13 +44,13 @@ int longitude = 20;
 int latitude = 20;
 
 // Tableau des murs pour gerer les collisions
-#define MAX_MUR 2000
+#define MAX_MUR 20000
 
 mur tableau_mur[MAX_MUR];
 int nb_mur = 0;
 
 // Tableau des boules pour gerer les collisions
-#define MAX_BOULE 2000
+#define MAX_BOULE 20000
 
 boule tableau_boule[MAX_BOULE];
 int nb_boule = 0;
@@ -229,7 +229,7 @@ void affiche_boule(int rayon, int x, int y, int z){
 
 GLuint textureID;  // variable globale ou membre
 
-// 1️⃣ Chargement au début
+// Chargement au début
 void load_image_texture( image img ) {
     unsigned char *data = stbi_load(img.nom_fichier, &img.width, &img.height, &img.channels, 0);
     if (!data) {
@@ -597,6 +597,8 @@ void creer_piece_avec_porte(point p1, point p2, int largeur_mur, int largeur_tro
 }
 
 void creer_objet_rammassable(int rayon, point p1, point p2){
+    total ++;
+
     // Emplacement aléatoire à l'intérieur
     int minX = (p1.x < p2.x) ? p1.x : p2.x;
     int maxX = (p1.x > p2.x) ? p1.x : p2.x;
@@ -714,8 +716,7 @@ void creer_objets(){
     creer_piece_avec_porte(p1, p2, 1, 100, 150, 2,2,2,2,0,1);
 
     //ajout_total
-    for (int i=0;i<200;i++){
-        total ++;
+    for (int i=0;i<1;i++){
         creer_objet_rammassable(20,p1,p2);
     }
 
@@ -730,8 +731,7 @@ void creer_objets(){
     creer_piece_avec_porte(p1, p2, 1, 100, 150, 0,0,0,0,1,0);
 
     //ajout_total
-    for (int i=0;i<200;i++){
-        total ++;
+    for (int i=0;i<0;i++){
         creer_objet_rammassable(20,p1,p2);
     }
 
@@ -746,8 +746,7 @@ void creer_objets(){
     creer_piece_avec_porte(p1, p2, 1, 100, 150, 2,0,0,0,0,0);
 
     //ajout_total
-    for (int i=0;i<200;i++){
-        total ++;
+    for (int i=0;i<0;i++){
         creer_objet_rammassable(20,p1,p2);
     }
 
@@ -755,6 +754,7 @@ void creer_objets(){
     p1.x = -1500;p1.y = 0; p1.z = 2000;
     p2.x = -800;p2.y = 1000; p2.z = 3000;
     creer_piece_avec_porte(p1, p2, 1, 100, 150, 0,0,2,0,0,0);
+    
     p1.x = 800;p1.y = 0; p1.z = 2000;
     p2.x = 1500;p2.y = 1000; p2.z = 3000;
     creer_piece_avec_porte(p1, p2, 1, 100, 150, 0,2,0,0,0,0);
@@ -779,7 +779,7 @@ void afficher_objets(){
         affiche_boule(b.rayon,b.p.x,b.p.y,b.p.z);
     }
 
-    // couleur
+    // couleur rouge
     glColor3f(1.0f, 0.0f, 0.0f);
     affiche_porte(porte_sortie.p1.x,porte_sortie.p1.y,porte_sortie.p1.z,porte_sortie.p2.x,porte_sortie.p2.y,porte_sortie.p2.z);
 

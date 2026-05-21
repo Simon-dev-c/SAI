@@ -2,8 +2,8 @@
 #define MAX_ESSENCE 300
 #define RAYON_JOUEUR 5.0f
 
-int WindowSizeX = 1400;
-int WindowSizeY = 800;
+int WindowSizeX = 1400; // 1400
+int WindowSizeY = 800;  // 800
 
 int niveauVie = 100;
 int niveauEssence = 300;

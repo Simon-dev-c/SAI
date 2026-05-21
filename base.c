@@ -19,6 +19,8 @@ void Affichage(){
     visionActuY = y_vue + lookY;
     visionActuZ = z_vue + lookZ;
 
+    
+
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(x_vue,y_vue,z_vue, visionActuX, visionActuY, visionActuZ,upX,upY,upZ);
@@ -103,31 +105,6 @@ void Affichage(){
     glutSwapBuffers();
 }
 
-/*
-void Animer()
-{
-    // faire en fonction des touches enfoncées le mouvement correspondant
-    if (liste_touche_enfoncé[0]){
-        x_vue++;
-    }
-    if (liste_touche_enfoncé[1]){
-        x_vue--;
-    }
-    if (liste_touche_enfoncé[2]){
-        z_vue++;
-    }
-    if (liste_touche_enfoncé[3]){
-        z_vue--;
-    }
-    if (liste_touche_enfoncé[4]){
-        y_vue++;
-    }
-    if (liste_touche_enfoncé[5]){
-        y_vue--;
-    }
-
-    glutPostRedisplay();
-}*/
  void Animer()
 {
 
@@ -270,7 +247,7 @@ int main(int argc, char* argv[]){
     glutInitWindowSize(WindowSizeX, WindowSizeY);
     glutInitWindowPosition(50, 50);
 
-    glutCreateWindow("Une␣maison");
+    glutCreateWindow("Une maison");
     glEnable(GL_DEPTH_TEST);
 
     glutDisplayFunc(Affichage);
